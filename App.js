@@ -31,6 +31,178 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
+
+// In App.js or ChatScreen.js
+import ChatInput from './src/components/ChatInput'; // Adjust path as needed
+
+// ... inside your component's return statement ...
+<ChatInput
+  newMessage={newMessage}
+  setNewMessage={setNewMessage}
+  handleSendMessage={handleSendMessage}
+/>
+
+// In App.js
+import LoadingOverlay from './src/components/LoadingOverlay'; // Adjust path as needed
+
+// ... inside your App component ...
+const [isSending, setIsSending] = useState(false); // New state for sending message
+
+const handleSendMessage = async () => {
+  if (newMessage.trim() === '' || !userId) {
+    return;
+  }
+  setIsSending(true); // Set loading to true when sending starts
+  try {
+    // ... your addDoc logic ...
+    await addDoc(messagesCollectionRef, {
+      senderId: userId,
+      text: newMessage.trim(),
+      timestamp: serverTimestamp(),
+    });
+    setNewMessage('');
+    console.log('Message sent successfully!');
+  } catch (e) {
+    console.error('Error sending message:', e);
+    setError('Failed to send message. Please try again.');
+  } finally {
+    setIsSending(false); // Set loading to false when sending completes (success or error)
+  }
+};
+
+// ... inside your return statement, typically at the end of the main View ...
+return (
+  <SafeAreaView style={styles.container}>
+    {/* ... existing header, flatlist, chat input ... */}
+
+    {/* Render the LoadingOverlay */}
+    <LoadingOverlay visible={isSending} message="Sending message..." />
+    <LoadingOverlay visible={loading} message="Initializing Chat..." /> {/* Reuse for initial load */}
+  </SafeAreaView>
+);
+
+// In App.js or ChatScreen.js
+import CustomModal from './src/components/CustomModal'; // Adjust path as needed
+
+// ... inside your component ...
+const [showConfirmModal, setShowConfirmModal] = useState(false);
+const [messageToSend, setMessageToSend] = useState(''); // Store message temporarily for confirmation
+
+const handlePreSendMessage = () => {
+  if (newMessage.trim() === '') {
+    // Maybe show a different alert for empty message
+    return;
+  }
+  setMessageToSend(newMessage.trim()); // Store message before showing modal
+  setShowConfirmModal(true); // Show the confirmation modal
+};
+
+const handleConfirmSend = () => {
+  // Logic to actually send the message (e.g., call handleSendMessage)
+  console.log('Confirmed send:', messageToSend);
+  // Assuming handleSendMessage uses newMessage state, you might need to adjust
+  // or pass messageToSend directly to a new send function.
+  // For simplicity, let's assume handleSendMessage uses the current newMessage state
+  // and we just close the modal.
+  handleSendMessage(); // Call the actual send function
+  setShowConfirmModal(false); // Hide the modal
+  setMessageToSend(''); // Clear temporary message
+};
+
+const handleCancelSend = () => {
+  setShowConfirmModal(false); // Hide the modal
+  setMessageToSend(''); // Clear temporary message
+};
+
+// ... in your return statement, typically at the end of the main View ...
+return (
+  <SafeAreaView style={styles.container}>
+    {/* ... existing header, flatlist, chat input ... */}
+
+    <CustomModal
+      visible={showConfirmModal}
+      title="Confirm Message"
+      message={`Are you sure you want to send this message?\n\n"${messageToSend}"`}
+      onConfirm={handleConfirmSend}
+      onCancel={handleCancelSend}
+      confirmText="Send"
+      cancelText="Cancel"
+    />
+
+    {/* You might trigger handlePreSendMessage instead of handleSendMessage from ChatInput */}
+    {/* For example, by changing onPress on the send button to handlePreSendMessage */}
+    {/* <ChatInput
+      newMessage={newMessage}
+      setNewMessage={setNewMessage}
+      handleSendMessage={handlePreSendMessage} // Changed to pre-send handler
+    /> */}
+  </SafeAreaView>
+);
+
+// In ChatInput.js (or its parent, like ChatScreen.js)
+import AttachmentPreview from './AttachmentPreview'; // Adjust path as needed
+// import * as ImagePicker from 'expo-image-picker'; // Example for media selection
+
+// ... inside your component ...
+const [selectedAttachment, setSelectedAttachment] = useState(null); // { uri: string, type: 'image' | 'video' }
+
+const pickImage = async () => {
+  // Request media library permissions
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    alert('Sorry, we need camera roll permissions to make this work!');
+    return;
+  }
+
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.All, // Allow both images and videos
+    allowsEditing: true, // Optional
+    aspect: [4, 3], // Optional
+    quality: 1, // Optional
+  });
+
+  if (!result.canceled) {
+    setSelectedAttachment({
+      uri: result.assets[0].uri,
+      type: result.assets[0].type,
+    });
+  }
+};
+
+const handleRemoveAttachment = () => {
+  setSelectedAttachment(null); // Clear the selected attachment
+};
+
+// ... in your return statement, typically above the TextInput ...
+return (
+  <KeyboardAvoidingView
+    // ... existing KeyboardAvoidingView props ...
+  >
+    {selectedAttachment && (
+      <AttachmentPreview
+        uri={selectedAttachment.uri}
+        type={selectedAttachment.type}
+        onRemove={handleRemoveAttachment}
+      />
+    )}
+
+    <View style={styles.inputRow}> {/* You might need a new style for input row */}
+      {/* Optional: Add a button to trigger image picker */}
+      <TouchableOpacity onPress={pickImage} style={styles.attachButton}>
+        <Feather name="paperclip" size={24} color="#bbb" />
+      </TouchableOpacity>
+
+      <TextInput
+        // ... existing TextInput props ...
+      />
+      <TouchableOpacity
+        // ... existing Send button props ...
+      >
+        <Text>Send</Text>
+      </TouchableOpacity>
+    </View>
+  </KeyboardAvoidingView>
+);
 // Global variables provided by the Canvas environment
 // These are mandatory and will be available at runtime.
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
