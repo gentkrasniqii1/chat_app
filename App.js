@@ -165,13 +165,11 @@ export default function App() {
   // The AppNavigator will then decide whether to show AuthScreen or MainTabNavigator
   // based on the `userId` prop.
   return (
-    <AppNavigator
-      userId={userId} // Pass the current user's ID to the navigator.
-      onAuthSuccess={handleAuthSuccess} // Pass the callback for successful authentication.
-      onSignOut={handleSignOut} // Pass the callback for signing out.
-      onStartChat={handleStartChat} // Pass the callback for starting new chats.
-    />
-  );
+  <SafeAreaView style={styles.loadingContainer}>
+    <Text style={styles.loadingText}>App Works on Web</Text>
+  </SafeAreaView>
+);
+
 }
 
 // StyleSheet for the main App component's loading and error states.

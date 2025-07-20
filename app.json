@@ -26,11 +26,20 @@
       "package": "com.yourcompany.chatapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      
     },
     "extra": {
       "eas": {
         "projectId": "your-eas-project-id"
+      },
+      "firebase": {
+        "apiKey": "AIzaSyDqHP0Pf6bg6zBYmJtMqUqftwW6JQKYXSk",
+        "authDomain": "chat-app-12bdd.firebaseapp.com",
+        "projectId": "chat-app-12bdd",
+        "storageBucket": "chat-app-12bdd.appspot.com",
+        "messagingSenderId": "634699770429",
+        "appId": "1:634699770429:web:8f9a34fe9fb208d2d4d854",
+        "measurementId": "G-ZFWNK521LS"
       }
     }
   }
